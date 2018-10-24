@@ -1,6 +1,6 @@
 const fetch = require("fetch");
 const urls = ['M7171_en', 'M7151_en', 'M7131_en'];
-let allFetchedData = [], allData = {};
+let allFetchedDataArray = [], allFetchedDataObject = {};
 
 const getDataAsJSON = async url => {
     const baseUrl = url;
@@ -23,8 +23,8 @@ const getAllUrlsAsJSON = async (address, allLinks) => {
 
     const allPromises = await Promise.all(allUrls.map(async url => {
         const theRequestParsed = await getDataAsJSON(`${baseUrl}${url}`);
-        allFetchedData.push(theRequestParsed);
-        allData[url] = theRequestParsed;
+        allFetchedDataArray.push(theRequestParsed);
+        allFetchedDataObject[url] = theRequestParsed;
         return theRequestParsed;
     }));
     
@@ -37,7 +37,7 @@ const logEverything = async (theBaseUrl, ArrayOfLinks) => {
     const theFinalRequest = await getAllUrlsAsJSON(theUrl, theLinks);
     console.log({theFinalRequest});
     console.log("%c and the logged data is: ", "color: yellow; font-size: 20px; font-weight: bold;");
-    console.log({allFetchedData, allData});
+    console.log({allFetchedDataArray, allFetchedDataObject});
     return "The data was successfully retrieved!";
 }
 
