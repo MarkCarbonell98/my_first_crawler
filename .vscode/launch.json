@@ -9,7 +9,7 @@
             "type": "node",
             "request": "launch",
             "name": "Launch Program",
-            "program": "${workspaceFolder}\\crawler2.0.js"
+            "program": "${workspaceFolder}\\crawler.js"
         }
     ]
 }

@@ -1,61 +1,71 @@
-const fetch = require('node-fetch');
-let allTractors = [], pieces = {}, promises = [];
-let allFinalTractors = [];
-const ids =  ['M7171_en', 'M7151_en', 'M7131_en'];
 
+const fetch = require("node-fetch");
+const fs = require("fs");
+const urls = ['M7171_en', 'M7151_en', 'M7131_en'];
+let allFetchedDataArray = [], allFetchedDataObject = {};
 
-const getDataAsJSON = async (url) => {
+const getDataAsJSON = async url => {
     const baseUrl = url;
-    let options1 = {
-        method: 'GET',
+    const options = {
+        method: "GET", 
         headers: {
-            'Content-Type': 'application/json'
-        },
-    }
-    await fetch(baseUrl, options1)
-    .then(res => {
-        // console.log(res)
-        return res.json();
-    })
-    .then(data => {
-        for(category in data) {
-            pieces[category] = data[category];
+            "Content-Type": "application/json"
         }
-        allTractors.push(pieces);
-        // console.log(allTractors);
-        return allTractors;
-
-    })
-    .catch(err => {
-        return 'something went wrong' + err;
-    })
-};
+    }
+    const theRequest = await fetch(baseUrl, options).catch(err => console.log(err));
+    const theResponse = await theRequest.json();
+    return theResponse;
+}
 
 
 
-// getDataAsJSON('https://touch-kubota.trio-hosting.de/api/M7171_en');
-// console.log(allTractors);
-async function asyncForEach(array, callback) {
-    for (let index = 0; index < array.length; index++) {
-        await callback(array[index], index, array)
+const getAllUrlsAsJSON = async (address, allLinks) => {
+    const baseUrl = address;
+    const allUrls = [...allLinks];
+    const allPromises = await Promise.all(allUrls.map(async url => {
+        const theRequestParsed = await getDataAsJSON(`${baseUrl}${url}`);
+        allFetchedDataArray.push(theRequestParsed);
+        allFetchedDataObject[url] = theRequestParsed;
+        return theRequestParsed;
+    }));
+    
+    return allPromises;
+}
+
+
+const writeNewFileAsJSON = (object) => {
+    for(let model in object) {
+        console.log(object[model]);
+        let modelAsJSON = JSON.stringify({model: object[model]}, null, 4);
+        fs.writeFile(`${__dirname}/Models_json/${model}.json`, modelAsJSON, {flag: "w+"}, err => {
+            if(err) {
+                console.log(err)
+            }
+        });
+        console.log('file Written Successfully');
     }
 }
 
-    let promsie = getDataAsJSON('https://touch-kubota.trio-hosting.de/api/M7171_en');
-    console.log(promsie);
+// writeNewFileAsJSON(allFetchedDataObject);
 
-//array with all ids 
-const getAllIDsFromJSON = async url => {
-    await asyncForEach(ids, async value => {
-        let promise = await getDataAsJSON(`${url}${value}`);
-        promises.push(promise);
-        console.log(`${url}${value}`);
-        // promises.push(promise);
-    })
-    // console.log(promises);
-    console.log('done');
+const triggerAndWriteRequest = async (theBaseUrl, ArrayOfLinks) => {
+    const theUrl = theBaseUrl || '';
+    const theLinks = ArrayOfLinks || [];
+    const theFinalRequest = await getAllUrlsAsJSON(theUrl, theLinks);
+
+    console.log({theFinalRequest});
+
+    console.log("%c and the logged data is: ", "color: yellow; font-size: 20px; font-weight: bold;");
+
+    console.log({allFetchedDataArray, allFetchedDataObject});
+    writeNewFileAsJSON(allFetchedDataObject)
+    
+    return "The data was successfully retrieved and written into files!";
 }
 
-getAllIDsFromJSON('https://touch-kubota.trio-hosting.de/api/');
-console.log(promises);
-// console.log(getDataAsJSON('https://touch-kubota.trio-hosting.de/api/M7171_en'));
+
+
+triggerAndWriteRequest("https://touch-kubota.trio-hosting.de/api/", urls);
+
+
+// writeNewFileAsJSON(allFetchedDataObject);
