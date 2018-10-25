@@ -33,22 +33,31 @@ const getAllUrlsAsJSON = async (address, allLinks) => {
 }
 
 
-const writeNewFileAsJSON = (object) => {
+const writeNewFileAsJSON = (object = {}, nameOfFolder = "") => {
+
     for(let model in object) {
         console.log(object[model]);
         let modelAsJSON = JSON.stringify({model: object[model]}, null, 4);
-        fs.writeFile(`${__dirname}/Models_json/${model}.json`, modelAsJSON, {flag: "w+"}, err => {
-            if(err) {
-                console.log(err)
-            }
-        });
+        if(!fs.existsSync(`${__dirname}/${nameOfFolder}`)) {
+            fs.mkdir(`${__dirname}/${nameOfFolder}`, err => console.log(err));
+            fs.writeFile(`${__dirname}/${nameOfFolder}/${model}.json`, modelAsJSON, {flag: "w+"}, err => {
+                if(err) {
+                    console.log(err)
+                }
+            });
+        } else {
+            fs.writeFile(`${__dirname}/${nameOfFolder}/${model}.json`, modelAsJSON, {flag: "w+"}, err => {
+                if(err) {
+                    console.log(err)
+                }
+            });
+        }
         console.log('file Written Successfully');
     }
 }
-
 // writeNewFileAsJSON(allFetchedDataObject);
 
-const triggerAndWriteRequest = async (theBaseUrl, ArrayOfLinks) => {
+const triggerAndWriteRequest = async (theBaseUrl, ArrayOfLinks, nameOfDirectory) => {
     const theUrl = theBaseUrl || '';
     const theLinks = ArrayOfLinks || [];
     const theFinalRequest = await getAllUrlsAsJSON(theUrl, theLinks);
@@ -58,14 +67,13 @@ const triggerAndWriteRequest = async (theBaseUrl, ArrayOfLinks) => {
     console.log("%c and the logged data is: ", "color: yellow; font-size: 20px; font-weight: bold;");
 
     console.log({allFetchedDataArray, allFetchedDataObject});
-    writeNewFileAsJSON(allFetchedDataObject)
+    writeNewFileAsJSON(allFetchedDataObject, nameOfDirectory)
     
     return "The data was successfully retrieved and written into files!";
 }
 
 
+//parameters: url, array with all routes, final directory name
+triggerAndWriteRequest("https://touch-kubota.trio-hosting.de/api/", urls, "Models_JSON");
 
-triggerAndWriteRequest("https://touch-kubota.trio-hosting.de/api/", urls);
 
-
-// writeNewFileAsJSON(allFetchedDataObject);
